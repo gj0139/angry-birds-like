@@ -10,7 +10,7 @@ export function createBlock(engine, { x, y, w, h, material }) {
     friction: mat.friction,
     restitution: 0.1,
   });
-  body.plugin = { kind: 'block', material, hp: mat.hp, maxHp: mat.hp, destroyed: false };
+  body.plugin = { kind: 'block', material, hp: mat.hp, maxHp: mat.hp, destroyed: false, w, h };
   Matter.Composite.add(engine.world, body);
   return body;
 }
