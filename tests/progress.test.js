@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loadProgress, saveStars, isUnlocked, totalStars } from '../src/progress.js';
+import { loadProgress, saveStars, isUnlocked, totalStars, getStorage } from '../src/progress.js';
 
 const memStorage = () => {
   const m = new Map();
@@ -49,5 +49,38 @@ describe('progress', () => {
 
   it('totals stars', () => {
     expect(totalStars({ stars: [3, 1, 0] })).toBe(4);
+  });
+
+  // reviewer I2(a): write throws while read succeeds (quota / private mode)
+  it('stars survive when setItem throws but getItem works', () => {
+    const s = {
+      getItem: () => null,
+      setItem: () => {
+        throw new Error('quota exceeded');
+      },
+    };
+    saveStars(s, 0, 2);
+    expect(loadProgress(s).stars).toEqual([2, 0, 0]);
+  });
+
+  // reviewer I2(b): accessing window.localStorage itself may throw
+  it('getStorage survives property access throwing', () => {
+    const desc = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError');
+      },
+    });
+    try {
+      const st = getStorage();
+      expect(() => st.getItem('k')).not.toThrow();
+      expect(st.getItem('k')).toBeNull();
+      st.setItem('k', 'v');
+      expect(st.getItem('k')).toBe('v');
+    } finally {
+      if (desc) Object.defineProperty(globalThis, 'localStorage', desc);
+      else delete globalThis.localStorage;
+    }
   });
 });

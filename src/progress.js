@@ -1,8 +1,29 @@
 const KEY = 'ab-like-progress';
 const LEVEL_COUNT = 3;
 const memory = new Map();
+// Per-storage overlay: set when a write falls back (quota / private mode).
+// Reads prefer it because getItem may keep returning null.
+const overlays = new WeakMap();
+
+export function getStorage() {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    // accessing the property itself can throw (site data blocked)
+    return makeMemoryStorage();
+  }
+}
+
+function makeMemoryStorage() {
+  const m = new Map();
+  return {
+    getItem: (k) => (m.has(k) ? m.get(k) : null),
+    setItem: (k, v) => m.set(k, String(v)),
+  };
+}
 
 function readRaw(storage) {
+  if (overlays.has(storage)) return overlays.get(storage);
   try {
     return storage.getItem(KEY);
   } catch {
@@ -13,8 +34,10 @@ function readRaw(storage) {
 function writeRaw(storage, value) {
   try {
     storage.setItem(KEY, value);
+    overlays.delete(storage);
   } catch {
     memory.set(KEY, value);
+    overlays.set(storage, value);
   }
 }
 

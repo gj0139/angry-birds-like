@@ -1,4 +1,4 @@
-export function createHud(root, { onRestart, onNext, onSelectLevel }) {
+export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute = () => {} }) {
   let topBar = null;
   let overlay = null;
 
@@ -22,12 +22,21 @@ export function createHud(root, { onRestart, onNext, onSelectLevel }) {
   }
 
   return {
-    renderTopBar({ birdsLeft, levelIndex }) {
+    renderTopBar({ birdsLeft, levelIndex, muted = false }) {
       if (!topBar) {
         topBar = el('div', { class: 'hud-topbar' });
         root.appendChild(topBar);
       }
-      topBar.textContent = `关卡 ${levelIndex + 1} · 小鸟 ×${birdsLeft}`;
+      topBar.textContent = '';
+      const info = el('span', { class: 'hud-topbar-info' }, `关卡 ${levelIndex + 1} · 小鸟 ×${birdsLeft}`);
+      const mute = el(
+        'button',
+        { 'data-testid': 'btn-mute', class: 'hud-btn hud-mute' },
+        muted ? '声音:关' : '声音:开',
+      );
+      mute.addEventListener('click', () => onToggleMute());
+      topBar.appendChild(info);
+      topBar.appendChild(mute);
       topBar.style.display = '';
     },
 
@@ -51,11 +60,9 @@ export function createHud(root, { onRestart, onNext, onSelectLevel }) {
           next.addEventListener('click', () => onNext());
           row.appendChild(next);
         }
-        if (!won) {
-          const menu = el('button', { 'data-testid': 'btn-menu', class: 'hud-btn' }, '选关');
-          menu.addEventListener('click', () => onSelectLevel(-1));
-          row.appendChild(menu);
-        }
+        const menu = el('button', { 'data-testid': 'btn-menu', class: 'hud-btn' }, '选关');
+        menu.addEventListener('click', () => onSelectLevel(-1));
+        row.appendChild(menu);
         box.appendChild(row);
       });
     },

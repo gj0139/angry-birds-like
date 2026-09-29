@@ -3,7 +3,7 @@ import Matter from 'matter-js';
 import { createWorld, step } from '../src/physics.js';
 import { createBlock, isDestroyed } from '../src/blocks.js';
 import { createPig } from '../src/pig.js';
-import { createDamageCollector, isSettleDue } from '../src/game.js';
+import { createDamageCollector, isSettleDue, advanceSteps } from '../src/game.js';
 
 describe('createDamageCollector', () => {
   it('queues during step, applies damage and removes only on flush', () => {
@@ -66,6 +66,23 @@ describe('createDamageCollector', () => {
 
     expect(isDestroyed(wall)).toBe(true);
   });
+
+  // reviewer I1: impact sound hook fires when a block takes damage
+  it('reports block impacts via onBlockImpact with the impact speed', () => {
+    const { engine } = createWorld();
+    createBlock(engine, { x: 800, y: 760, w: 40, h: 80, material: 'stone' });
+    const bullet = Matter.Bodies.rectangle(700, 760, 30, 30, { density: 0.01 });
+    Matter.Composite.add(engine.world, bullet);
+    const onBlockImpact = vi.fn();
+    const collector = createDamageCollector(engine, { onBlockImpact });
+    collector.attach();
+    Matter.Body.setVelocity(bullet, { x: 24, y: 0 });
+    let guard = 0;
+    while (collector.pending() === 0 && guard++ < 30) step(engine);
+    collector.flush();
+    expect(onBlockImpact).toHaveBeenCalled();
+    expect(onBlockImpact.mock.calls[0][0]).toBeGreaterThan(1);
+  });
 });
 
 describe('isSettleDue (Review Focus #3: timeout force-settle)', () => {
@@ -80,5 +97,24 @@ describe('isSettleDue (Review Focus #3: timeout force-settle)', () => {
   it('force-due at timeout even if never quiet', () => {
     expect(isSettleDue(0, 6000, 0, cfg)).toBe(true);
     expect(isSettleDue(0, 5999, 0, cfg)).toBe(false);
+  });
+});
+
+describe('advanceSteps (fixed-timestep accumulator, reviewer M1 promoted)', () => {
+  const STEP = 1000 / 60;
+  it('one full frame yields one step', () => {
+    const r = advanceSteps(0, STEP, STEP, 5);
+    expect(r.steps).toBe(1);
+    expect(r.accum).toBeCloseTo(0, 5);
+  });
+  it('short frame yields zero steps and keeps the remainder', () => {
+    const r = advanceSteps(0, 4, STEP, 5);
+    expect(r.steps).toBe(0);
+    expect(r.accum).toBeCloseTo(4, 5);
+  });
+  it('huge frame is capped and backlog dropped', () => {
+    const r = advanceSteps(0, 500, STEP, 5);
+    expect(r.steps).toBe(5);
+    expect(r.accum).toBe(0); // backlog dropped, no spiral of death
   });
 });

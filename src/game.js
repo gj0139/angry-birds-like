@@ -15,7 +15,21 @@ export function isSettleDue(settleMs, now, launchAt, settle = SETTLE) {
   return launchAt != null && now - launchAt >= settle.timeoutMs;
 }
 
-export function createDamageCollector(engine, { onPigDied = () => {}, byBirdBody = null } = {}) {
+export function advanceSteps(accum, dt, stepMs = 1000 / 60, maxSteps = 5) {
+  let a = accum + dt;
+  let steps = 0;
+  while (a >= stepMs && steps < maxSteps) {
+    steps += 1;
+    a -= stepMs;
+  }
+  if (a >= stepMs) a = 0; // capped: drop backlog so a stall can't spiral
+  return { steps, accum: a };
+}
+
+export function createDamageCollector(
+  engine,
+  { onPigDied = () => {}, onBlockImpact = () => {}, byBirdBody = null } = {},
+) {
   const queue = [];
 
   function attach() {
@@ -50,6 +64,7 @@ export function createDamageCollector(engine, { onPigDied = () => {}, byBirdBody
           onPigDied();
         }
       } else {
+        if (speed >= 1) onBlockImpact(speed);
         dead = applyImpact(body, speed, { byBird });
       }
       if (dead && isDestroyed(body)) {
@@ -79,8 +94,10 @@ export class Game {
     this.renderer = null;
     this.state = null;
     this.bird = null;
+    this.birds = [];
     this.pull = null;
     this.settleMs = 0;
+    this.accum = 0;
     this.lastNow = 0;
     this.destroyed = false;
   }
@@ -91,12 +108,20 @@ export class Game {
     this.engine = engine;
     this.level = loadLevel(engine, this.levelCfg);
     this.state = createGame(this.level.birdsRemaining, this.level.pigs.length);
+    this.birds = [];
+    this.accum = 0;
 
     this.renderer = createRenderer(this.canvas);
     this.renderer.resize();
 
     this.collector = createDamageCollector(engine, {
-      onPigDied: () => this.dispatch({ type: 'PIG_DIED' }),
+      onPigDied: () => {
+        this.dispatch({ type: 'PIG_DIED' });
+        this.sfx?.play('pigDie');
+      },
+      onBlockImpact: (speed) => {
+        if (speed >= 2) this.sfx?.play('impact');
+      },
       byBirdBody: () => this.bird,
     });
     this.collector.attach();
@@ -118,6 +143,7 @@ export class Game {
 
   loadBird() {
     this.bird = createBird(this.engine, SLING.anchor);
+    this.birds.push(this.bird);
     this.pull = null;
   }
 
@@ -192,11 +218,14 @@ export class Game {
     const dt = Math.min(now - this.lastNow, 100);
     this.lastNow = now;
 
-    step(this.engine);
-    this.collector.flush();
+    const adv = advanceSteps(this.accum, dt);
+    this.accum = adv.accum;
+    for (let i = 0; i < adv.steps; i++) step(this.engine);
+    if (adv.steps > 0) this.collector.flush();
 
     if (this.bird && this.birdOutOfBounds()) {
       Matter.Composite.remove(this.engine.world, this.bird);
+      this.birds = this.birds.filter((b) => b !== this.bird);
       this.bird = null;
     }
 
@@ -215,6 +244,7 @@ export class Game {
       slingAnchor: SLING.anchor,
       stretch: this.state.phase === 'dragging' ? this.pull : null,
       bird: this.bird,
+      birds: this.birds,
       blocks: this.level.blocks.filter((b) => !isDestroyed(b)),
       pigs: this.level.pigs.filter((p) => !isDestroyed(p)),
       groundY: this.level.ground.position.y - 50,

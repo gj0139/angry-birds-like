@@ -71,7 +71,11 @@ export function createRenderer(canvas) {
 
   function draw(scene) {
     const ctx = canvas.getContext('2d');
-    ctx.setTransform(vp.scale, 0, 0, vp.scale, vp.offsetX, vp.offsetY);
+    // Backing store is in device px while vp is computed from CSS px;
+    // r bridges the two spaces so draw and input stay inverses at any dpr.
+    const cssW = canvas.clientWidth || canvas.width;
+    const r = canvas.width / cssW;
+    ctx.setTransform(vp.scale * r, 0, 0, vp.scale * r, vp.offsetX * r, vp.offsetY * r);
 
     ctx.fillStyle = SKY_FILL;
     ctx.fillRect(0, 0, WORLD.width, WORLD.height);
@@ -138,10 +142,10 @@ export function createRenderer(canvas) {
       ctx.restore();
     }
 
-    if (scene.bird) {
+    for (const birdBody of scene.birds || []) {
       ctx.save();
-      ctx.translate(scene.bird.position.x, scene.bird.position.y);
-      ctx.rotate(scene.bird.angle || 0);
+      ctx.translate(birdBody.position.x, birdBody.position.y);
+      ctx.rotate(birdBody.angle || 0);
       ctx.fillStyle = BIRD_FILL;
       ctx.beginPath();
       ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);

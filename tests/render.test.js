@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { computeViewport, toWorld, toScreen, createRenderer } from '../src/render.js';
 import { createWorld } from '../src/physics.js';
 import { createBlock } from '../src/blocks.js';
@@ -32,6 +32,8 @@ describe('viewport', () => {
 });
 
 describe('renderer', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it('draws every entity without throwing, using a mock ctx', () => {
     const { ctx, calls } = makeMockCtx();
     const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
@@ -39,14 +41,66 @@ describe('renderer', () => {
     r.draw({
       slingAnchor: { x: 220, y: 620 },
       stretch: { x: 60, y: 20 },
+      birds: [{ position: { x: 220, y: 620 }, angle: 0, plugin: { kind: 'bird' } }],
       bird: { position: { x: 220, y: 620 }, angle: 0, plugin: { kind: 'bird' } },
-      blocks: [{ position: { x: 900, y: 760 }, angle: 0.1, plugin: { kind: 'block', material: 'wood', hp: 4, maxHp: 6 } }],
+      blocks: [{ position: { x: 900, y: 760 }, angle: 0.1, plugin: { kind: 'block', material: 'wood', hp: 4, maxHp: 6, w: 100, h: 40 } }],
       pigs: [{ position: { x: 950, y: 740 }, angle: 0, plugin: { kind: 'pig', hp: 6, maxHp: 10 } }],
       groundY: 800,
     });
     expect(calls.length).toBeGreaterThan(10);
     expect(calls.some(([m]) => m === 'arc')).toBe(true);
     expect(calls.some(([m]) => m === 'fillRect')).toBe(true);
+  });
+
+  // Review Focus #5 / reviewer C1: draw transform must live in the same
+  // pixel space as the device-pixel backing store (dpr != 1).
+  it('draw transform scales to device-pixel backing (dpr=2)', () => {
+    vi.stubGlobal('devicePixelRatio', 2);
+    const { ctx, calls } = makeMockCtx();
+    const canvas = {
+      width: 2400,
+      height: 1400,
+      clientWidth: 1200,
+      clientHeight: 700,
+      getContext: () => ctx,
+      style: {},
+    };
+    const r = createRenderer(canvas);
+    r.resize();
+    expect(canvas.width).toBe(2400); // backing store in device px
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const vp = computeViewport(1600, 900, 1200, 700);
+    const st = calls.find(([m]) => m === 'setTransform');
+    expect(st).toEqual(['setTransform', vp.scale * 2, 0, 0, vp.scale * 2, vp.offsetX * 2, vp.offsetY * 2]);
+  });
+
+  // reviewer I5: previously launched birds stay visible
+  it('draws every bird in scene.birds', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [
+        { position: { x: 400, y: 700 }, angle: 0, plugin: { kind: 'bird' } },
+        { position: { x: 600, y: 750 }, angle: 0, plugin: { kind: 'bird' } },
+      ],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const arcs = calls.filter(([m]) => m === 'arc').length;
+    expect(arcs).toBe(6); // 3 arcs per bird × 2 birds — both drawn
   });
 
   it('draws a real block using its plugin dimensions', () => {
@@ -59,6 +113,7 @@ describe('renderer', () => {
       slingAnchor: { x: 220, y: 620 },
       stretch: null,
       bird: null,
+      birds: [],
       blocks: [block],
       pigs: [],
       groundY: 800,
