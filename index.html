@@ -4,9 +4,96 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>愤怒的小鸟风格 · 物理弹弓</title>
+    <style>
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #263238;
+        font-family: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        overflow: hidden;
+      }
+      #game {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+      }
+      #hud {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+      #hud .hud-topbar,
+      #hud .hud-overlay {
+        pointer-events: auto;
+      }
+      .hud-topbar {
+        position: absolute;
+        top: 12px;
+        left: 16px;
+        padding: 8px 14px;
+        background: #ffffffee;
+        border: 2px #37474F solid;
+        border-radius: 10px;
+        font-weight: 600;
+        color: #263238;
+      }
+      .hud-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #00000088;
+      }
+      .hud-overlay > * {
+        background: #FFF9C4;
+        border: 3px #F9A825 solid;
+        border-radius: 16px;
+        padding: 28px 40px;
+        text-align: center;
+        color: #33691E;
+      }
+      .hud-title {
+        margin: 0 0 12px;
+        font-size: 34px;
+      }
+      .hud-stars {
+        font-size: 40px;
+        color: #F9A825;
+        margin-bottom: 18px;
+        letter-spacing: 6px;
+      }
+      .hud-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+      }
+      .hud-levels {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        min-width: 260px;
+      }
+      .hud-btn {
+        font-size: 18px;
+        padding: 10px 22px;
+        border: 2px #33691E solid;
+        border-radius: 10px;
+        background: #AED581;
+        color: #1B5E20;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .hud-btn:hover { background: #9CCC65; }
+      .hud-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .hud-btn-primary { background: #FFD54F; border-color: #F57F17; }
+      .hud-btn-primary:hover { background: #FFCA28; }
+    </style>
   </head>
   <body>
     <canvas id="game" width="1600" height="900"></canvas>
+    <div id="hud"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
