@@ -2,18 +2,7 @@ import { createSfx } from './audio.js';
 import { Game } from './game.js';
 import { createHud } from './ui.js';
 import { loadProgress, saveStars, isUnlocked } from './progress.js';
-
-// Placeholder until Task 11 ships real level data.
-const tempLevel = {
-  birds: 3,
-  blocks: [
-    { x: 900, y: 780, w: 100, h: 40, material: 'wood' },
-    { x: 900, y: 720, w: 40, h: 80, material: 'stone' },
-    { x: 1010, y: 770, w: 60, h: 60, material: 'ice' },
-  ],
-  pigs: [{ x: 945, y: 778 }],
-};
-const LEVELS = [tempLevel, tempLevel, tempLevel];
+import { LEVELS } from './levels/index.js';
 
 const canvas = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
