@@ -1,17 +1,16 @@
-// 关卡 5（夜晚）：石基 + 木箱 + 冰柱 + 木顶盖塔，3 猪（顶/基座/地面）。
+// 关卡 5（夜晚）：地堡——双石墙 + 木顶，2 猪藏内 + 1 猪在顶。
+// 内部猪必须砸穿墙/顶才能碰到，顶猪靠塌落。
 export default {
   theme: 'night',
   birds: 3,
   blocks: [
-    { x: 980, y: 780, w: 200, h: 40, material: 'stone' }, // base on ground
-    { x: 980, y: 730, w: 80, h: 60, material: 'wood' }, // box on base (bottom 760)
-    { x: 955, y: 660, w: 25, h: 80, material: 'ice' }, // left ice col (bottom 700 = box top)
-    { x: 1005, y: 660, w: 25, h: 80, material: 'ice' }, // right ice col
-    { x: 980, y: 608, w: 140, h: 24, material: 'wood' }, // cap on ice cols (bottom 620)
+    { x: 930, y: 750, w: 40, h: 100, material: 'stone' }, // left wall (bottom 800)
+    { x: 1070, y: 750, w: 40, h: 100, material: 'stone' }, // right wall
+    { x: 1000, y: 685, w: 220, h: 30, material: 'wood' }, // roof (bottom 700 = wall tops)
   ],
   pigs: [
-    { x: 980, y: 574 }, // on cap (top 596)
-    { x: 905, y: 738 }, // on base beside box
-    { x: 1150, y: 778 }, // ground outside
+    { x: 975, y: 778 }, // inside left
+    { x: 1025, y: 778 }, // inside right
+    { x: 1000, y: 648 }, // on roof (top 670)
   ],
 };

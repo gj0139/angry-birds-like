@@ -1,17 +1,16 @@
-// 关卡 7（海角）：石墙 + 长平台 + 双冰箱 + 顶梁，3 猪（顶梁/平台/地面）。
+// 关卡 7（海角）：阶梯错层——木/冰/石三级台阶，猪逐级站立。
+// 站得越高塌得越致命（坠落 ≥8px/step 即死），逼你自上而下拆。
 export default {
   theme: 'sea',
   birds: 3,
   blocks: [
-    { x: 1010, y: 740, w: 60, h: 120, material: 'stone' }, // wall (bottom 800, top 680)
-    { x: 1010, y: 665, w: 220, h: 30, material: 'wood' }, // platform (bottom 680 = wall top)
-    { x: 970, y: 625, w: 50, h: 50, material: 'ice' }, // left box (bottom 650 = platform top)
-    { x: 1060, y: 625, w: 50, h: 50, material: 'ice' }, // right box
-    { x: 1015, y: 588, w: 140, h: 24, material: 'wood' }, // top beam (bottom 600 = box tops)
+    { x: 930, y: 770, w: 60, h: 60, material: 'wood' }, // step 1 (bottom 800)
+    { x: 1030, y: 750, w: 60, h: 100, material: 'ice' }, // step 2
+    { x: 1130, y: 730, w: 60, h: 140, material: 'stone' }, // step 3 (toughest on top)
   ],
   pigs: [
-    { x: 1015, y: 554 }, // on top beam (top 576)
-    { x: 920, y: 628 }, // on platform left of boxes
-    { x: 1200, y: 778 }, // ground
+    { x: 930, y: 718 }, // on step 1 (top 740)
+    { x: 1030, y: 678 }, // on step 2 (top 700)
+    { x: 1130, y: 638 }, // on step 3 (top 660)
   ],
 };

@@ -1,18 +1,19 @@
-// 关卡 8（黎明终章）：石基双柱 + 冰台 + 木箱 + 冰顶六件塔，3 猪（塔内/塔顶/侧翼）。
+// 关卡 8（黎明终章）：复合要塞——冰盾掩体猪 + 石基 + 石塔木帽 + 高木塔。
+// 三猪三地势：掩体后、塔帽上、高塔顶；3 鸟零容错。
 export default {
   theme: 'dawn',
   birds: 3,
   blocks: [
-    { x: 1000, y: 780, w: 240, h: 40, material: 'stone' }, // base (top 760)
-    { x: 950, y: 705, w: 30, h: 110, material: 'wood' }, // left col (bottom 760, top 650)
-    { x: 1050, y: 705, w: 30, h: 110, material: 'wood' }, // right col
-    { x: 1000, y: 638, w: 180, h: 24, material: 'ice' }, // ice slab (bottom 650 = col tops)
-    { x: 1000, y: 591, w: 70, h: 70, material: 'wood' }, // wood box (bottom 626 = slab top)
-    { x: 1000, y: 536, w: 40, h: 40, material: 'ice' }, // ice crown (bottom 556 = box top)
+    { x: 905, y: 750, w: 30, h: 100, material: 'ice' }, // ice shield (bottom 800)
+    { x: 1060, y: 780, w: 280, h: 40, material: 'stone' }, // base (bottom 800, top 760)
+    { x: 1060, y: 700, w: 40, h: 120, material: 'stone' }, // stone tower (bottom 760, top 640)
+    { x: 1060, y: 628, w: 80, h: 24, material: 'wood' }, // cap on tower (bottom 640)
+    { x: 1120, y: 700, w: 30, h: 80, material: 'stone' }, // side wall on base (bottom 760)
+    { x: 1180, y: 680, w: 40, h: 160, material: 'wood' }, // tall wood tower (bottom 760, top 600)
   ],
   pigs: [
-    { x: 1000, y: 738 }, // inside on base top (760)
-    { x: 1000, y: 494 }, // on ice crown (top 516)
-    { x: 1200, y: 778 }, // side wing
+    { x: 960, y: 738 }, // behind shield, on base (top 760)
+    { x: 1060, y: 594 }, // on cap (top 616)
+    { x: 1180, y: 578 }, // on tall tower (top 600)
   ],
 };

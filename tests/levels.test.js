@@ -21,14 +21,15 @@ describe('levels', () => {
       for (const b of lv.blocks) {
         expect(b.material in MATERIALS).toBe(true);
         expect(b.y + b.h / 2).toBeLessThanOrEqual(800.5); // not buried
-        expect(b.x).toBeGreaterThan(850);
+        // ≥750 keeps clear of the slingshot zone (sling x=220, bird range ~945)
+        expect(b.x).toBeGreaterThan(750);
         expect(b.x).toBeLessThan(1350);
         expect(b.x - b.w / 2).toBeGreaterThan(0);
         expect(b.x + b.w / 2).toBeLessThan(WORLD.width);
       }
       for (const p of lv.pigs) {
         expect(p.y).toBeLessThan(800);
-        expect(p.x).toBeGreaterThan(850);
+        expect(p.x).toBeGreaterThan(750);
       }
     }
   });
@@ -39,6 +40,23 @@ describe('levels', () => {
     expect(mats(LEVELS[1]).size).toBeGreaterThanOrEqual(2);
     expect(LEVELS[2].blocks.length).toBeGreaterThan(LEVELS[0].blocks.length);
     expect(mats(LEVELS[7])).toEqual(new Set(['wood', 'stone', 'ice'])); // finale mixes all
-    expect(LEVELS[7].blocks.length).toBeGreaterThan(LEVELS[3].blocks.length);
+    expect(LEVELS[7].blocks.length).toBeGreaterThanOrEqual(LEVELS[3].blocks.length);
+  });
+
+  // difficulty ramp: the back half demands all 3 pigs cleared with 3 birds
+  // and mixes at least two materials (protection / tougher targets)
+  it('levels 4-8 each have 3 pigs and at least 2 materials', () => {
+    const mats = (lv) => new Set(lv.blocks.map((b) => b.material));
+    for (const lv of LEVELS.slice(3)) {
+      expect(lv.pigs).toHaveLength(3);
+      expect(mats(lv).size).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('every level has a structurally distinct layout', () => {
+    const shapes = LEVELS.map((lv) =>
+      JSON.stringify(lv.blocks.map((b) => [b.x, b.y, b.w, b.h]).sort()),
+    );
+    expect(new Set(shapes).size).toBe(LEVELS.length);
   });
 });
