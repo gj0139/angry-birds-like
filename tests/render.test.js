@@ -103,6 +103,48 @@ describe('renderer', () => {
     expect(arcs).toBe(6); // 3 arcs per bird × 2 birds — both drawn
   });
 
+  // aim ray must lie exactly along the launch direction (-stretch),
+  // because the fork-tip band line is ~15-20° off from it.
+  it('draws aim ray along the true launch direction (-stretch)', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    const stretch = { x: -100, y: 0 }; // pulled left → launch (1,0)*L
+    const birdAt = { x: 220 + stretch.x, y: 620 + stretch.y };
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch,
+      bird: null,
+      birds: [{ position: birdAt, angle: 0, plugin: { kind: 'bird' } }],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const L = 160;
+    const hit = calls.some(
+      ([m, x, y]) => m === 'lineTo' && Math.abs(x - (birdAt.x + L)) < 0.5 && Math.abs(y - birdAt.y) < 0.5,
+    );
+    expect(hit).toBe(true);
+  });
+
+  it('draws no aim ray without a stretch', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    const before = calls.length;
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const aimCalls = calls.slice(before).filter(([m]) => m === 'setLineDash');
+    expect(aimCalls).toHaveLength(0);
+  });
+
   it('draws a real block using its plugin dimensions', () => {
     const { engine } = createWorld();
     const block = createBlock(engine, { x: 900, y: 760, w: 100, h: 40, material: 'wood' });

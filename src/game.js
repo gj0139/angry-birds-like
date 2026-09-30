@@ -173,6 +173,11 @@ export class Game {
     if (!isWithinGrabRadius(pt, this.bird.position, SLING.grabRadius)) return;
     this.dispatch({ type: 'DRAG_START' });
     this.pull = computePull(SLING.anchor, pt, SLING.maxPull);
+    // move the bird immediately so band/aim ray and body agree on grab
+    Matter.Body.setPosition(this.bird, {
+      x: SLING.anchor.x + this.pull.x,
+      y: SLING.anchor.y + this.pull.y,
+    });
   }
 
   onMove(pt) {

@@ -8,6 +8,7 @@ const BIRD_STROKE = '#B71C1C';
 const GROUND_FILL = '#8D6E63';
 const SKY_FILL = '#81D4FA';
 const SLING_FILL = '#6D4C41';
+const AIM_LENGTH = 160;
 
 export function computeViewport(worldW, worldH, canvasW, canvasH) {
   const scale = Math.min(canvasW / worldW, canvasH / worldH);
@@ -69,6 +70,37 @@ export function createRenderer(canvas) {
     ctx.stroke();
   }
 
+  function drawAimRay(ctx, birdPos, stretch) {
+    const len = Math.hypot(stretch.x, stretch.y);
+    if (len < 0.01) return;
+    // Launch velocity is -stretch * power, so the truthful indicator is
+    // exactly this direction (the fork-tip band line is ~15-20° off).
+    const ux = -stretch.x / len;
+    const uy = -stretch.y / len;
+    const ex = birdPos.x + ux * AIM_LENGTH;
+    const ey = birdPos.y + uy * AIM_LENGTH;
+    ctx.save();
+    ctx.setLineDash([12, 9]);
+    ctx.strokeStyle = '#B71C1C';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(birdPos.x, birdPos.y);
+    ctx.lineTo(ex, ey);
+    ctx.stroke();
+    // arrowhead
+    ctx.setLineDash([]);
+    const ah = 12;
+    const px = -uy;
+    const py = ux;
+    ctx.beginPath();
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - ux * ah + px * ah * 0.5, ey - uy * ah + py * ah * 0.5);
+    ctx.moveTo(ex, ey);
+    ctx.lineTo(ex - ux * ah - px * ah * 0.5, ey - uy * ah - py * ah * 0.5);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function draw(scene) {
     const ctx = canvas.getContext('2d');
     // Backing store is in device px while vp is computed from CSS px;
@@ -90,6 +122,7 @@ export function createRenderer(canvas) {
 
     drawSlingFork(ctx, anchor);
     if (scene.bird) drawBands(ctx, anchor, birdPos);
+    if (scene.stretch) drawAimRay(ctx, birdPos, scene.stretch);
 
     for (const b of scene.blocks) {
       const mat = MATERIALS[b.plugin.material] || MATERIALS.wood;
