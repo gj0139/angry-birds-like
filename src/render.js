@@ -3,8 +3,11 @@ import { WORLD, PIG, BIRD } from './config.js';
 
 const PIG_FILL = '#7CB342';
 const PIG_STROKE = '#558B2F';
-const BIRD_FILL = '#E53935';
-const BIRD_STROKE = '#B71C1C';
+const PHOENIX_FILL = '#FF6F00'; // body
+const PHOENIX_STROKE = '#E65100';
+const FLAME_DEEP = '#FF3D00'; // tail outer flame
+const FLAME_GOLD = '#FFD54F'; // crest / flame tips / beak
+const FLAME_MID = '#FFA726'; // wing
 const SLING_FILL = '#6D4C41';
 const AIM_LENGTH = 160;
 
@@ -349,13 +352,59 @@ export function createRenderer(canvas) {
       ctx.save();
       ctx.translate(birdBody.position.x, birdBody.position.y);
       ctx.rotate(birdBody.angle || 0);
-      ctx.fillStyle = BIRD_FILL;
+
+      // tail flames (behind the body)
+      ctx.fillStyle = FLAME_DEEP;
+      ctx.beginPath();
+      ctx.moveTo(-8, -12);
+      ctx.lineTo(-38, -4);
+      ctx.lineTo(-30, 0);
+      ctx.lineTo(-38, 4);
+      ctx.lineTo(-8, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = FLAME_GOLD;
+      ctx.beginPath();
+      ctx.moveTo(-8, -6);
+      ctx.lineTo(-30, -2);
+      ctx.lineTo(-24, 0);
+      ctx.lineTo(-30, 2);
+      ctx.lineTo(-8, 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // body
+      ctx.fillStyle = PHOENIX_FILL;
       ctx.beginPath();
       ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = BIRD_STROKE;
+      ctx.strokeStyle = PHOENIX_STROKE;
       ctx.lineWidth = 2;
       ctx.stroke();
+
+      // wing
+      ctx.fillStyle = FLAME_MID;
+      ctx.beginPath();
+      ctx.moveTo(-6, 2);
+      ctx.quadraticCurveTo(-2, 14, 10, 10);
+      ctx.quadraticCurveTo(2, 6, -6, 2);
+      ctx.closePath();
+      ctx.fill();
+
+      // crest feathers
+      ctx.fillStyle = FLAME_GOLD;
+      ctx.beginPath();
+      ctx.moveTo(0, -16);
+      ctx.lineTo(3, -30);
+      ctx.lineTo(7, -16);
+      ctx.closePath();
+      ctx.moveTo(-6, -14);
+      ctx.lineTo(-9, -26);
+      ctx.lineTo(-2, -15);
+      ctx.closePath();
+      ctx.fill();
+
+      // eye
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
       ctx.arc(5, -5, 6, 0, Math.PI * 2);
@@ -364,7 +413,9 @@ export function createRenderer(canvas) {
       ctx.beginPath();
       ctx.arc(7, -5, 2.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#FFB300';
+
+      // beak
+      ctx.fillStyle = FLAME_GOLD;
       ctx.beginPath();
       ctx.moveTo(BIRD.radius - 2, -3);
       ctx.lineTo(BIRD.radius + 8, 0);

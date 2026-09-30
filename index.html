@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>愤怒的小鸟风格 · 物理弹弓</title>
     <style>
       * { box-sizing: border-box; }
@@ -17,6 +20,7 @@
         display: block;
         width: 100vw;
         height: 100vh;
+        height: 100dvh; /* dynamic viewport: fills screen when mobile URL bar hides */
         touch-action: none; /* keep pointer gestures on the canvas: no scroll/zoom stealing drags */
       }
       .rotate-hint {

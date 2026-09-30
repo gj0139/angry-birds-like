@@ -53,6 +53,29 @@ describe('hud', () => {
     expect(root.querySelector('[data-testid="btn-mute"]').textContent).toContain('关');
   });
 
+  // mobile fullscreen toggle lives in the top bar next to mute
+  it('fullscreen button fires handler and reflects state', () => {
+    const root = document.createElement('div');
+    const onToggleFullscreen = vi.fn();
+    const hud = createHud(root, {
+      onRestart: vi.fn(),
+      onNext: vi.fn(),
+      onSelectLevel: vi.fn(),
+      onToggleMute: vi.fn(),
+      onToggleFullscreen,
+    });
+    hud.renderTopBar({ birdsLeft: 3, levelIndex: 0, muted: false });
+    const btn = root.querySelector('[data-testid="btn-fullscreen"]');
+    expect(btn).toBeTruthy();
+    expect(btn.textContent).toContain('全屏');
+    btn.click();
+    expect(onToggleFullscreen).toHaveBeenCalled();
+    hud.setFullscreen(true);
+    expect(btn.textContent).toContain('退出');
+    hud.setFullscreen(false);
+    expect(btn.textContent).toContain('全屏');
+  });
+
   // landscape guidance: portrait shows a rotate hint, landscape hides it
   it('shouldShowRotateHint is true only in portrait', () => {
     expect(shouldShowRotateHint(844, 390)).toBe(false); // landscape phone

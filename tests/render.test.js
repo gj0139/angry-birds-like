@@ -188,6 +188,44 @@ describe('renderer', () => {
     expect(styles).toContain('#7EC8E3'); // day sky
   });
 
+  // phoenix: distinctive fire-bird palette, only when a bird is on screen
+  it('draws the phoenix in fire colors when a bird is present', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [{ position: { x: 400, y: 700 }, angle: 0, plugin: { kind: 'bird' } }],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).toContain('#FF6F00'); // phoenix body orange
+    expect(styles).toContain('#FFD54F'); // crest / flame tip gold
+    expect(styles).not.toContain('#E53935'); // old red bird is gone
+  });
+
+  it('draws no phoenix colors without any bird', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      theme: 'dusk',
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).not.toContain('#FF6F00');
+  });
+
   it('draws a real block using its plugin dimensions', () => {
     const { engine } = createWorld();
     const block = createBlock(engine, { x: 900, y: 760, w: 100, h: 40, material: 'wood' });

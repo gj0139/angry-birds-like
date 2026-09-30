@@ -15,6 +15,29 @@ let game = null;
 let current = 0;
 let muted = false;
 let lastState = null;
+let autoFsTried = false;
+
+function requestFullscreen() {
+  try {
+    const p = document.documentElement.requestFullscreen?.();
+    if (p && typeof p.catch === 'function') p.catch(() => {});
+  } catch {
+    /* iOS Safari and some browsers refuse — ignore */
+  }
+}
+
+function toggleFullscreen() {
+  try {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else requestFullscreen();
+  } catch {
+    /* ignore */
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  hud.setFullscreen(Boolean(document.fullscreenElement));
+});
 
 function renderTopBar() {
   if (!lastState) return;
@@ -43,6 +66,7 @@ const hud = createHud(hudRoot, {
     sfx.setMuted(muted);
     renderTopBar();
   },
+  onToggleFullscreen: () => toggleFullscreen(),
 });
 
 function showSelect() {
@@ -60,6 +84,11 @@ function startLevel(index) {
   current = index;
   hud.hideOverlays();
   game?.destroy();
+  // mobile: enter fullscreen inside the tap gesture that started the level
+  if (!autoFsTried && globalThis.matchMedia?.('(pointer: coarse)').matches) {
+    autoFsTried = true;
+    requestFullscreen();
+  }
   game = new Game({
     canvas,
     sfx,

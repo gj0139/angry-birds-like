@@ -2,7 +2,10 @@ export function shouldShowRotateHint(width, height) {
   return height > width;
 }
 
-export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute = () => {} }) {
+export function createHud(
+  root,
+  { onRestart, onNext, onSelectLevel, onToggleMute = () => {}, onToggleFullscreen = () => {} },
+) {
   let topBar = null;
   let overlay = null;
   let rotateHint = null;
@@ -34,6 +37,8 @@ export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute
       }
       topBar.textContent = '';
       const info = el('span', { class: 'hud-topbar-info' }, `关卡 ${levelIndex + 1} · 小鸟 ×${birdsLeft}`);
+      const fs = el('button', { 'data-testid': 'btn-fullscreen', class: 'hud-btn hud-mute' }, '全屏');
+      fs.addEventListener('click', () => onToggleFullscreen());
       const mute = el(
         'button',
         { 'data-testid': 'btn-mute', class: 'hud-btn hud-mute' },
@@ -41,8 +46,14 @@ export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute
       );
       mute.addEventListener('click', () => onToggleMute());
       topBar.appendChild(info);
+      topBar.appendChild(fs);
       topBar.appendChild(mute);
       topBar.style.display = '';
+    },
+
+    setFullscreen(active) {
+      const btn = root.querySelector('[data-testid="btn-fullscreen"]');
+      if (btn) btn.textContent = active ? '退出全屏' : '全屏';
     },
 
     hideTopBar() {
