@@ -265,6 +265,7 @@ export class Game {
     this.renderer.draw({
       theme: this.levelCfg.theme,
       t: now,
+      water: this.levelCfg.water || null,
       slingAnchor: SLING.anchor,
       stretch: this.state.phase === 'dragging' ? this.pull : null,
       bird: this.bird,

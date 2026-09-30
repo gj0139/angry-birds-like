@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { computeViewport, toWorld, toScreen, createRenderer } from '../src/render.js';
+import {
+  computeViewport,
+  toWorld,
+  toScreen,
+  createRenderer,
+  refractY,
+} from '../src/render.js';
 import { createWorld } from '../src/physics.js';
 import { createBlock } from '../src/blocks.js';
 
@@ -296,6 +302,85 @@ describe('renderer', () => {
       { x: 320, y: 712 },
     ]);
     expect(withTrail).toBeGreaterThan(noTrail);
+  });
+
+  // water refraction: displayed position rises toward the surface (n=1.33)
+  it('refractY shifts submerged points up by real depth / n', () => {
+    const surface = 560;
+    expect(refractY(700, surface)).toBeCloseTo(surface + 140 / 1.33, 5); // ~665.19
+    expect(refractY(500, surface)).toBe(500); // above surface untouched
+  });
+
+  const pigAt = (x, y) => ({
+    position: { x, y },
+    angle: 0,
+    plugin: { kind: 'pig', hp: 10, maxHp: 10 },
+  });
+
+  it('submerged pig is drawn at its refracted (display) position', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      theme: 'water',
+      water: { x: 860, y: 560, w: 580, h: 240 },
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [pigAt(1000, 700)],
+      groundY: 800,
+    });
+    const translates = calls.filter(([m]) => m === 'translate');
+    // shown ~665 instead of real 700
+    expect(
+      translates.some(([, , y]) => Math.abs(y - (560 + 140 / 1.33)) < 1),
+    ).toBe(true);
+    expect(translates.some(([, , y]) => Math.abs(y - 700) < 1)).toBe(false);
+  });
+
+  it('pig outside the pool keeps its true position', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      theme: 'water',
+      water: { x: 860, y: 560, w: 580, h: 240 },
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [pigAt(600, 700)], // left of pool
+      groundY: 800,
+    });
+    const translates = calls.filter(([m]) => m === 'translate');
+    expect(translates.some(([, , y]) => Math.abs(y - 700) < 1)).toBe(true);
+  });
+
+  it('draws a translucent water overlay over the pool', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      theme: 'water',
+      water: { x: 860, y: 560, w: 580, h: 240 },
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).toContain('#29B6F6'); // water body
+    expect(calls.some(([m, v]) => m === 'globalAlpha' && v === 0.45)).toBe(true);
+    // overlay must be drawn AFTER the pigs (later in the call stream)
+    const pigIdx = calls.findIndex(([m]) => m === 'translate');
+    const waterIdx = calls.findIndex(([m, v]) => m === 'fillStyle' && v === '#29B6F6');
+    expect(waterIdx).toBeGreaterThan(pigIdx);
   });
 
   it('draws a real block using its plugin dimensions', () => {

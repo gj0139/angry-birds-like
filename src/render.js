@@ -1,5 +1,11 @@
 import { MATERIALS } from './materials.js';
-import { WORLD, PIG, BIRD, WALL } from './config.js';
+import { WORLD, PIG, BIRD, WALL, WATER_REFRACT_INDEX } from './config.js';
+
+// Cartoon refraction: submerged points appear closer to the surface.
+export function refractY(y, surfaceY, n = WATER_REFRACT_INDEX) {
+  if (y <= surfaceY) return y;
+  return surfaceY + (y - surfaceY) / n;
+}
 
 const PIG_FILL = '#7CB342';
 const PIG_STROKE = '#558B2F';
@@ -441,7 +447,18 @@ function drawAimRay(ctx, birdPos, stretch) {
 
     for (const pig of scene.pigs) {
       ctx.save();
-      ctx.translate(pig.position.x, pig.position.y);
+      // refraction: only pigs inside the pool are shown displaced upward
+      let drawY = pig.position.y;
+      const w = scene.water;
+      if (
+        w &&
+        pig.position.x >= w.x &&
+        pig.position.x <= w.x + w.w &&
+        pig.position.y > w.y
+      ) {
+        drawY = refractY(pig.position.y, w.y);
+      }
+      ctx.translate(pig.position.x, drawY);
       ctx.rotate(pig.angle || 0);
       ctx.fillStyle = PIG_FILL;
       ctx.beginPath();
@@ -470,6 +487,17 @@ function drawAimRay(ctx, birdPos, stretch) {
 
     for (const birdBody of scene.birds || []) {
       drawBird(ctx, birdBody, scene.t || 0);
+    }
+
+    if (scene.water) {
+      ctx.save();
+      ctx.globalAlpha = 0.45;
+      ctx.fillStyle = '#29B6F6';
+      ctx.fillRect(scene.water.x, scene.water.y, scene.water.w, scene.water.h);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#81D4FA';
+      ctx.fillRect(scene.water.x, scene.water.y, scene.water.w, 6);
+      ctx.restore();
     }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
