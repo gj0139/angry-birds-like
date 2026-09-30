@@ -226,6 +226,78 @@ describe('renderer', () => {
     expect(styles).not.toContain('#FF6F00');
   });
 
+  const birdAt = (skin, extra = {}) => ({
+    position: { x: 400, y: 700 },
+    angle: 0,
+    plugin: { kind: 'bird', skin, trail: [], ...extra },
+  });
+
+  it('draws the red bird variant in classic colors', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [birdAt('bird')],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).toContain('#E53935'); // classic red
+    expect(styles).not.toContain('#FF6F00'); // no phoenix body
+  });
+
+  it('phoenix wing flaps: drawing at different times differs', () => {
+    const drawAt = (t) => {
+      const { ctx, calls } = makeMockCtx();
+      const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+      r.resize();
+      r.draw({
+        t,
+        slingAnchor: { x: 220, y: 620 },
+        stretch: null,
+        bird: null,
+        birds: [birdAt('phoenix')],
+        blocks: [],
+        pigs: [],
+        groundY: 800,
+      });
+      // the wing flap is a time-based rotate() — compare transform calls
+      return JSON.stringify(calls.filter(([m]) => m === 'rotate'));
+    };
+    expect(drawAt(0)).not.toBe(drawAt(50));
+  });
+
+  it('phoenix trail draws extra flame dots', () => {
+    const countArcs = (trail) => {
+      const { ctx, calls } = makeMockCtx();
+      const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+      r.resize();
+      r.draw({
+        t: 100,
+        slingAnchor: { x: 220, y: 620 },
+        stretch: null,
+        bird: null,
+        birds: [birdAt('phoenix', { trail })],
+        blocks: [],
+        pigs: [],
+        groundY: 800,
+      });
+      return calls.filter(([m]) => m === 'arc').length;
+    };
+    const noTrail = countArcs([]);
+    const withTrail = countArcs([
+      { x: 380, y: 705 },
+      { x: 360, y: 708 },
+      { x: 340, y: 710 },
+      { x: 320, y: 712 },
+    ]);
+    expect(withTrail).toBeGreaterThan(noTrail);
+  });
+
   it('draws a real block using its plugin dimensions', () => {
     const { engine } = createWorld();
     const block = createBlock(engine, { x: 900, y: 760, w: 100, h: 40, material: 'wood' });

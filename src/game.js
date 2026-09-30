@@ -244,6 +244,13 @@ export class Game {
       this.bird = null;
     }
 
+    // phoenix flame trail while flying
+    if (this.bird && this.state.phase === 'flying' && this.bird.plugin?.skin === 'phoenix') {
+      const tr = this.bird.plugin.trail;
+      tr.push({ x: this.bird.position.x, y: this.bird.position.y });
+      if (tr.length > 16) tr.shift();
+    }
+
     if (this.state.phase === 'flying') {
       if (this.allSettled()) {
         this.settleMs += dt;
@@ -257,6 +264,7 @@ export class Game {
 
     this.renderer.draw({
       theme: this.levelCfg.theme,
+      t: now,
       slingAnchor: SLING.anchor,
       stretch: this.state.phase === 'dragging' ? this.pull : null,
       bird: this.bird,

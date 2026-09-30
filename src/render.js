@@ -263,7 +263,110 @@ export function createRenderer(canvas) {
     ctx.stroke();
   }
 
-  function drawAimRay(ctx, birdPos, stretch) {
+  function drawBird(ctx, body, t) {
+  const skin = body.plugin?.skin || 'phoenix';
+  ctx.save();
+  ctx.translate(body.position.x, body.position.y);
+  ctx.rotate(body.angle || 0);
+
+  if (skin === 'phoenix') {
+    // fading flame trail behind the bird
+    const trail = body.plugin?.trail || [];
+    for (let i = 0; i < trail.length; i++) {
+      const k = (i + 1) / trail.length;
+      ctx.globalAlpha = 0.15 + 0.5 * k;
+      ctx.fillStyle = i % 2 === 0 ? FLAME_DEEP : FLAME_MID;
+      ctx.beginPath();
+      ctx.arc(trail[i].x - body.position.x, trail[i].y - body.position.y, 2 + 6 * k, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // tail flames (behind the body)
+    ctx.fillStyle = FLAME_DEEP;
+    ctx.beginPath();
+    ctx.moveTo(-8, -12);
+    ctx.lineTo(-38, -4);
+    ctx.lineTo(-30, 0);
+    ctx.lineTo(-38, 4);
+    ctx.lineTo(-8, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = FLAME_GOLD;
+    ctx.beginPath();
+    ctx.moveTo(-8, -6);
+    ctx.lineTo(-30, -2);
+    ctx.lineTo(-24, 0);
+    ctx.lineTo(-30, 2);
+    ctx.lineTo(-8, 6);
+    ctx.closePath();
+    ctx.fill();
+
+    // body
+    ctx.fillStyle = PHOENIX_FILL;
+    ctx.beginPath();
+    ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = PHOENIX_STROKE;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // flapping wing
+    ctx.save();
+    ctx.translate(0, 0);
+    ctx.rotate(Math.sin(t / 90) * 0.45);
+    ctx.fillStyle = FLAME_MID;
+    ctx.beginPath();
+    ctx.moveTo(-6, 2);
+    ctx.quadraticCurveTo(-2, 14, 10, 10);
+    ctx.quadraticCurveTo(2, 6, -6, 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    // crest feathers
+    ctx.fillStyle = FLAME_GOLD;
+    ctx.beginPath();
+    ctx.moveTo(0, -16);
+    ctx.lineTo(3, -30);
+    ctx.lineTo(7, -16);
+    ctx.closePath();
+    ctx.moveTo(-6, -14);
+    ctx.lineTo(-9, -26);
+    ctx.lineTo(-2, -15);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    // classic red bird
+    ctx.fillStyle = '#E53935';
+    ctx.beginPath();
+    ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#B71C1C';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // eye + beak shared by both skins
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(5, -5, 6, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.arc(7, -5, 2.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = skin === 'phoenix' ? FLAME_GOLD : '#FFB300';
+  ctx.beginPath();
+  ctx.moveTo(BIRD.radius - 2, -3);
+  ctx.lineTo(BIRD.radius + 8, 0);
+  ctx.lineTo(BIRD.radius - 2, 3);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawAimRay(ctx, birdPos, stretch) {
     const len = Math.hypot(stretch.x, stretch.y);
     if (len < 0.01) return;
     // Launch velocity is -stretch * power, so the truthful indicator is
@@ -366,80 +469,7 @@ export function createRenderer(canvas) {
     }
 
     for (const birdBody of scene.birds || []) {
-      ctx.save();
-      ctx.translate(birdBody.position.x, birdBody.position.y);
-      ctx.rotate(birdBody.angle || 0);
-
-      // tail flames (behind the body)
-      ctx.fillStyle = FLAME_DEEP;
-      ctx.beginPath();
-      ctx.moveTo(-8, -12);
-      ctx.lineTo(-38, -4);
-      ctx.lineTo(-30, 0);
-      ctx.lineTo(-38, 4);
-      ctx.lineTo(-8, 12);
-      ctx.closePath();
-      ctx.fill();
-      ctx.fillStyle = FLAME_GOLD;
-      ctx.beginPath();
-      ctx.moveTo(-8, -6);
-      ctx.lineTo(-30, -2);
-      ctx.lineTo(-24, 0);
-      ctx.lineTo(-30, 2);
-      ctx.lineTo(-8, 6);
-      ctx.closePath();
-      ctx.fill();
-
-      // body
-      ctx.fillStyle = PHOENIX_FILL;
-      ctx.beginPath();
-      ctx.arc(0, 0, BIRD.radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = PHOENIX_STROKE;
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // wing
-      ctx.fillStyle = FLAME_MID;
-      ctx.beginPath();
-      ctx.moveTo(-6, 2);
-      ctx.quadraticCurveTo(-2, 14, 10, 10);
-      ctx.quadraticCurveTo(2, 6, -6, 2);
-      ctx.closePath();
-      ctx.fill();
-
-      // crest feathers
-      ctx.fillStyle = FLAME_GOLD;
-      ctx.beginPath();
-      ctx.moveTo(0, -16);
-      ctx.lineTo(3, -30);
-      ctx.lineTo(7, -16);
-      ctx.closePath();
-      ctx.moveTo(-6, -14);
-      ctx.lineTo(-9, -26);
-      ctx.lineTo(-2, -15);
-      ctx.closePath();
-      ctx.fill();
-
-      // eye
-      ctx.fillStyle = '#FFFFFF';
-      ctx.beginPath();
-      ctx.arc(5, -5, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(7, -5, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      // beak
-      ctx.fillStyle = FLAME_GOLD;
-      ctx.beginPath();
-      ctx.moveTo(BIRD.radius - 2, -3);
-      ctx.lineTo(BIRD.radius + 8, 0);
-      ctx.lineTo(BIRD.radius - 2, 3);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      drawBird(ctx, birdBody, scene.t || 0);
     }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);

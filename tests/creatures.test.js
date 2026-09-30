@@ -31,4 +31,15 @@ describe('bird', () => {
     for (let i = 0; i < 10; i++) step(engine);
     expect(bird.position.x).toBeLessThan(220); // flies left
   });
+
+  it('randomly spawns as phoenix or red bird per load (injected rng)', () => {
+    const { engine } = createWorld();
+    const phoenix = createBird(engine, { x: 220, y: 620 }, () => 0.1);
+    expect(phoenix.plugin.skin).toBe('phoenix');
+    const red = createBird(engine, { x: 220, y: 620 }, () => 0.9);
+    expect(red.plugin.skin).toBe('bird');
+    expect(red.plugin.trail).toEqual([]);
+    const auto = createBird(engine, { x: 220, y: 620 });
+    expect(['phoenix', 'bird']).toContain(auto.plugin.skin);
+  });
 });
