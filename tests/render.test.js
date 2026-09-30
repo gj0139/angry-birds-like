@@ -10,7 +10,10 @@ function makeMockCtx() {
       if (prop === 'canvas') return { width: 1200, height: 700 };
       return (...args) => calls.push([prop, ...args]);
     },
-    set: () => true,
+    set: (_, prop, value) => {
+      calls.push([prop, value]); // record fillStyle/strokeStyle/lineWidth assignments
+      return true;
+    },
   });
   return { ctx, calls };
 }
@@ -99,8 +102,11 @@ describe('renderer', () => {
       pigs: [],
       groundY: 800,
     });
-    const arcs = calls.filter(([m]) => m === 'arc').length;
-    expect(arcs).toBe(6); // 3 arcs per bird × 2 birds — both drawn
+    const translates = calls.filter(([m]) => m === 'translate');
+    // both birds drawn at their own positions (background adds arcs, so
+    // pinning translate coordinates is the reliable signal)
+    expect(translates.some(([, x, y]) => Math.abs(x - 400) < 1 && Math.abs(y - 700) < 1)).toBe(true);
+    expect(translates.some(([, x, y]) => Math.abs(x - 600) < 1 && Math.abs(y - 750) < 1)).toBe(true);
   });
 
   // aim ray must lie exactly along the launch direction (-stretch),
@@ -143,6 +149,43 @@ describe('renderer', () => {
     });
     const aimCalls = calls.slice(before).filter(([m]) => m === 'setLineDash');
     expect(aimCalls).toHaveLength(0);
+  });
+
+  // themed background: sky + ground colors come from the level theme
+  it('draws themed sky and ground for night', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      theme: 'night',
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).toContain('#0D1B2A'); // night sky
+    expect(styles).toContain('#4E342E'); // night ground
+  });
+
+  it('falls back to day theme when none given', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const styles = calls.filter(([m, v]) => m === 'fillStyle').map(([, v]) => v);
+    expect(styles).toContain('#7EC8E3'); // day sky
   });
 
   it('draws a real block using its plugin dimensions', () => {

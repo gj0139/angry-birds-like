@@ -1,5 +1,5 @@
 const KEY = 'ab-like-progress';
-const LEVEL_COUNT = 3;
+const LEVEL_COUNT = 8;
 const memory = new Map();
 // Per-storage overlay: set when a write falls back (quota / private mode).
 // Reads prefer it because getItem may keep returning null.

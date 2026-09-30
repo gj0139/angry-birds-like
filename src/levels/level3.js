@@ -1,5 +1,6 @@
 // 关卡 3：石基 + 木柱 + 冰顶 + 顶层木箱三层塔，3 猪（塔内/塔顶/侧翼）。
 export default {
+  theme: 'dusk',
   birds: 3,
   blocks: [
     { x: 960, y: 770, w: 180, h: 60, material: 'stone' }, // base on ground

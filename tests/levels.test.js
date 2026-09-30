@@ -4,12 +4,15 @@ import { MATERIALS } from '../src/materials.js';
 import { WORLD } from '../src/config.js';
 
 describe('levels', () => {
-  it('has exactly 3 levels, each 3 birds and 1-3 pigs', () => {
-    expect(LEVELS).toHaveLength(3);
+  const THEMES = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn'];
+
+  it('has exactly 8 levels, each 3 birds, 1-3 pigs, with a valid theme', () => {
+    expect(LEVELS).toHaveLength(8);
     for (const lv of LEVELS) {
       expect(lv.birds).toBe(3);
       expect(lv.pigs.length).toBeGreaterThanOrEqual(1);
       expect(lv.pigs.length).toBeLessThanOrEqual(3);
+      expect(THEMES).toContain(lv.theme);
     }
   });
 
@@ -35,5 +38,7 @@ describe('levels', () => {
     expect(mats(LEVELS[0])).toEqual(new Set(['wood']));
     expect(mats(LEVELS[1]).size).toBeGreaterThanOrEqual(2);
     expect(LEVELS[2].blocks.length).toBeGreaterThan(LEVELS[0].blocks.length);
+    expect(mats(LEVELS[7])).toEqual(new Set(['wood', 'stone', 'ice'])); // finale mixes all
+    expect(LEVELS[7].blocks.length).toBeGreaterThan(LEVELS[3].blocks.length);
   });
 });

@@ -1,5 +1,6 @@
 // 关卡 2：石基座 + 木柱框包冰芯 + 木顶盖，2 猪（屋顶 + 地面）。
 export default {
+  theme: 'forest',
   birds: 3,
   blocks: [
     { x: 980, y: 780, w: 160, h: 40, material: 'stone' }, // base on ground

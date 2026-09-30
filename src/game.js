@@ -246,6 +246,7 @@ export class Game {
     }
 
     this.renderer.draw({
+      theme: this.levelCfg.theme,
       slingAnchor: SLING.anchor,
       stretch: this.state.phase === 'dragging' ? this.pull : null,
       bird: this.bird,

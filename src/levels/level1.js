@@ -1,6 +1,7 @@
 // 关卡 1（教学）：门字形木架 + 1 猪，全木，≤2 层。
 // 所有刚体精确贴合，避免加载瞬间自由落体造成摔伤。
 export default {
+  theme: 'day',
   birds: 3,
   blocks: [
     { x: 920, y: 740, w: 30, h: 120, material: 'wood' }, // left post (bottom 800)
