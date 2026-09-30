@@ -5,7 +5,7 @@ export function createBird(engine, anchor) {
   const body = Matter.Bodies.circle(anchor.x, anchor.y, BIRD.radius, {
     density: BIRD.density,
     friction: 0.5,
-    restitution: 0.4,
+    restitution: BIRD.restitution ?? 0.4,
   });
   // Must freeze via setStatic() after creation: creating with the isStatic
   // option never records _original mass, so setStatic(false) can't restore it.

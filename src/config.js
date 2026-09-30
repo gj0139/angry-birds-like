@@ -16,4 +16,13 @@ export const SETTLE = {
 };
 
 export const PIG = { radius: 22, maxHp: 10, impactKillSpeed: 8 };
-export const BIRD = { radius: 18, density: 0.005 };
+// restitution is paired as min(a,b): ground stays 0 (no bounce on land),
+// the back wall (0.9) therefore bounces the bird at this value.
+export const BIRD = { radius: 18, density: 0.005, restitution: 0.8 };
+
+// Back wall behind every level's structures: bird bounces off it with a
+// physical restitution (normal component reversed, scaled by restitution).
+export const WALL = { x: 1460, width: 40, restitution: 0.9, friction: 0.05 };
+
+// Water refraction (cartoon model): apparent depth = real depth / n.
+export const WATER_REFRACT_INDEX = 1.33;

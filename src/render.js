@@ -1,5 +1,5 @@
 import { MATERIALS } from './materials.js';
-import { WORLD, PIG, BIRD } from './config.js';
+import { WORLD, PIG, BIRD, WALL } from './config.js';
 
 const PIG_FILL = '#7CB342';
 const PIG_STROKE = '#558B2F';
@@ -158,6 +158,22 @@ function drawDecor(ctx, theme, groundY) {
   }
 }
 
+function drawWall(ctx, groundY) {
+  const left = WALL.x - WALL.width / 2;
+  ctx.fillStyle = '#78909C';
+  ctx.fillRect(left, 0, WALL.width, groundY);
+  ctx.fillStyle = '#546E7A';
+  ctx.fillRect(left, 0, 6, groundY);
+  ctx.strokeStyle = '#455A64';
+  ctx.lineWidth = 2;
+  for (let y = 50; y < groundY; y += 55) {
+    ctx.beginPath();
+    ctx.moveTo(left, y);
+    ctx.lineTo(left + WALL.width, y);
+    ctx.stroke();
+  }
+}
+
 function drawBackground(ctx, themeKey, groundY) {
   const t = THEMES[themeKey] || THEMES.day;
   const W = WORLD.width;
@@ -287,6 +303,7 @@ export function createRenderer(canvas) {
     ctx.setTransform(vp.scale * r, 0, 0, vp.scale * r, vp.offsetX * r, vp.offsetY * r);
 
     drawBackground(ctx, scene.theme, scene.groundY);
+    drawWall(ctx, scene.groundY);
 
     const anchor = scene.slingAnchor;
     const birdPos = scene.stretch
