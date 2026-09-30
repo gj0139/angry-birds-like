@@ -4,14 +4,14 @@ import { MATERIALS } from '../src/materials.js';
 import { WORLD } from '../src/config.js';
 
 describe('levels', () => {
-  const THEMES = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn'];
+  const THEMES = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn', 'water'];
 
-  it('has exactly 8 levels, each 3 birds, 1-3 pigs, with a valid theme', () => {
-    expect(LEVELS).toHaveLength(8);
+  it('has exactly 11 levels, each 3 birds, 1-6 pigs, with a valid theme', () => {
+    expect(LEVELS).toHaveLength(11);
     for (const lv of LEVELS) {
       expect(lv.birds).toBe(3);
       expect(lv.pigs.length).toBeGreaterThanOrEqual(1);
-      expect(lv.pigs.length).toBeLessThanOrEqual(3);
+      expect(lv.pigs.length).toBeLessThanOrEqual(6);
       expect(THEMES).toContain(lv.theme);
     }
   });
@@ -47,7 +47,7 @@ describe('levels', () => {
   // and mixes at least two materials (protection / tougher targets)
   it('levels 4-8 each have 3 pigs and at least 2 materials', () => {
     const mats = (lv) => new Set(lv.blocks.map((b) => b.material));
-    for (const lv of LEVELS.slice(3)) {
+    for (const lv of LEVELS.slice(3, 8)) {
       expect(lv.pigs).toHaveLength(3);
       expect(mats(lv).size).toBeGreaterThanOrEqual(2);
     }
@@ -58,5 +58,23 @@ describe('levels', () => {
       JSON.stringify(lv.blocks.map((b) => [b.x, b.y, b.w, b.h]).sort()),
     );
     expect(new Set(shapes).size).toBe(LEVELS.length);
+  });
+
+  // water levels 9-11: pool config + more pigs hiding underwater
+  it('water levels 9-11 carry a pool and 4-6 pigs', () => {
+    for (const lv of LEVELS.slice(8)) {
+      expect(lv.theme).toBe('water');
+      expect(lv.water).toBeTruthy();
+      expect(lv.water.w).toBeGreaterThan(0);
+      expect(lv.water.h).toBeGreaterThan(0);
+      expect(lv.pigs.length).toBeGreaterThanOrEqual(4);
+      expect(lv.pigs.length).toBeLessThanOrEqual(6);
+      // every pig is actually submerged (real position below the surface)
+      for (const p of lv.pigs) {
+        expect(p.y).toBeGreaterThan(lv.water.y);
+        expect(p.x).toBeGreaterThan(lv.water.x);
+        expect(p.x).toBeLessThan(lv.water.x + lv.water.w);
+      }
+    }
   });
 });

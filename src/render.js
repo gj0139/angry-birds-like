@@ -17,7 +17,7 @@ const FLAME_MID = '#FFA726'; // wing
 const SLING_FILL = '#6D4C41';
 const AIM_LENGTH = 160;
 
-export const THEME_KEYS = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn'];
+export const THEME_KEYS = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn', 'water'];
 
 const THEMES = {
   day: { sky: '#7EC8E3', skyLow: '#C9EFFF', hillFar: '#A5D6A7', hillNear: '#81C784', ground: '#8D6E63', groundEdge: '#5D4037' },
@@ -28,6 +28,7 @@ const THEMES = {
   snow: { sky: '#B3E5FC', skyLow: '#E1F5FE', hillFar: '#CFD8DC', hillNear: '#ECEFF1', ground: '#CFD8DC', groundEdge: '#90A4AE' },
   sea: { sky: '#4FC3F7', skyLow: '#B3E5FC', hillFar: '#66BB6A', hillNear: '#43A047', ground: '#FFE0B2', groundEdge: '#FFCC80' },
   dawn: { sky: '#F8BBD0', skyLow: '#F3E5F5', hillFar: '#A1887F', hillNear: '#8D6E63', ground: '#795548', groundEdge: '#4E342E' },
+  water: { sky: '#80DEEA', skyLow: '#E0F7FA', hillFar: '#81C784', hillNear: '#4DB6AC', ground: '#A1887F', groundEdge: '#795548' },
 };
 
 const STARS = [
