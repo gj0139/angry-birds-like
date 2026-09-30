@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { computePull, computeLaunchVelocity, shouldLaunch, isWithinGrabRadius } from '../src/slingshot.js';
+import {
+  computePull,
+  computeLaunchVelocity,
+  shouldLaunch,
+  isWithinGrabRadius,
+  adaptiveGrabRadius,
+} from '../src/slingshot.js';
 
 const anchor = { x: 220, y: 620 };
 
@@ -25,5 +31,14 @@ describe('slingshot', () => {
   it('grab radius check', () => {
     expect(isWithinGrabRadius({ x: 250, y: 620 }, anchor, 60)).toBe(true);
     expect(isWithinGrabRadius({ x: 400, y: 620 }, anchor, 60)).toBe(false);
+  });
+
+  // fingers need a bigger on-screen target than the mouse: keep the
+  // grab radius at >= minScreenPx CSS pixels when the view is scaled down
+  it('adaptive grab radius grows on small screens, stays 60 on desktop', () => {
+    expect(adaptiveGrabRadius(60, 1)).toBe(60); // desktop scale
+    const phone = adaptiveGrabRadius(60, 0.43); // landscape phone letterbox
+    expect(phone).toBeCloseTo(48 / 0.43, 5); // ~112 world px
+    expect(phone).toBeGreaterThan(60);
   });
 });

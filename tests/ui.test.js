@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import { createHud } from '../src/ui.js';
+import { createHud, shouldShowRotateHint } from '../src/ui.js';
 
 describe('hud', () => {
   it('result overlay wires restart and next', () => {
@@ -51,5 +51,24 @@ describe('hud', () => {
     expect(onToggleMute).toHaveBeenCalled();
     hud.renderTopBar({ birdsLeft: 2, levelIndex: 0, muted: true });
     expect(root.querySelector('[data-testid="btn-mute"]').textContent).toContain('关');
+  });
+
+  // landscape guidance: portrait shows a rotate hint, landscape hides it
+  it('shouldShowRotateHint is true only in portrait', () => {
+    expect(shouldShowRotateHint(844, 390)).toBe(false); // landscape phone
+    expect(shouldShowRotateHint(390, 844)).toBe(true); // portrait phone
+    expect(shouldShowRotateHint(1280, 800)).toBe(false); // desktop
+  });
+
+  it('rotate hint toggles visibility', () => {
+    const root = document.createElement('div');
+    const hud = createHud(root, { onRestart: vi.fn(), onNext: vi.fn(), onSelectLevel: vi.fn() });
+    hud.showRotateHint(true);
+    const hint = root.querySelector('[data-testid="rotate-hint"]');
+    expect(hint).toBeTruthy();
+    expect(hint.textContent).toContain('横屏');
+    expect(hint.style.display).not.toBe('none');
+    hud.showRotateHint(false);
+    expect(hint.style.display).toBe('none');
   });
 });

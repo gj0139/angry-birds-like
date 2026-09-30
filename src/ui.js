@@ -1,6 +1,11 @@
+export function shouldShowRotateHint(width, height) {
+  return height > width;
+}
+
 export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute = () => {} }) {
   let topBar = null;
   let overlay = null;
+  let rotateHint = null;
 
   function clearOverlay() {
     if (overlay) overlay.remove();
@@ -94,6 +99,14 @@ export function createHud(root, { onRestart, onNext, onSelectLevel, onToggleMute
 
     hideOverlays() {
       clearOverlay();
+    },
+
+    showRotateHint(show) {
+      if (!rotateHint) {
+        rotateHint = el('div', { 'data-testid': 'rotate-hint', class: 'rotate-hint' }, '↻ 请横屏游玩');
+        root.appendChild(rotateHint);
+      }
+      rotateHint.style.display = show ? 'flex' : 'none';
     },
   };
 }

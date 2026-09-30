@@ -21,3 +21,7 @@ export function shouldLaunch(pull, minPull) {
 export function isWithinGrabRadius(point, birdPos, grabRadius) {
   return Math.hypot(point.x - birdPos.x, point.y - birdPos.y) <= grabRadius;
 }
+
+export function adaptiveGrabRadius(baseRadius, scale, minScreenPx = 48) {
+  return Math.max(baseRadius, minScreenPx / scale);
+}

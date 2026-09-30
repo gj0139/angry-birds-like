@@ -3,6 +3,7 @@ import { Game } from './game.js';
 import { createHud } from './ui.js';
 import { loadProgress, saveStars, isUnlocked, getStorage } from './progress.js';
 import { LEVELS } from './levels/index.js';
+import { shouldShowRotateHint } from './ui.js';
 
 const canvas = document.getElementById('game');
 const hudRoot = document.getElementById('hud');
@@ -84,5 +85,12 @@ if (import.meta.env.DEV) {
   window.__game = () => game;
   window.__app = { startLevel, showSelect, get progress() { return progress; } };
 }
+
+function syncOrientation() {
+  hud.showRotateHint(shouldShowRotateHint(window.innerWidth, window.innerHeight));
+}
+globalThis.addEventListener('resize', syncOrientation);
+globalThis.addEventListener('orientationchange', syncOrientation);
+syncOrientation();
 
 showSelect();

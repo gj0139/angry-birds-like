@@ -5,10 +5,16 @@ import { createBird, launchBird } from './bird.js';
 import { applyImpact, isDestroyed } from './blocks.js';
 import { applyPigImpact } from './pig.js';
 import { createGame, reduce } from './gameState.js';
-import { computePull, computeLaunchVelocity, shouldLaunch, isWithinGrabRadius } from './slingshot.js';
+import {
+  computePull,
+  computeLaunchVelocity,
+  shouldLaunch,
+  isWithinGrabRadius,
+  adaptiveGrabRadius,
+} from './slingshot.js';
 import { createRenderer } from './render.js';
 import { createInput } from './input.js';
-import { SLING, SETTLE } from './config.js';
+import { SLING, SETTLE, WORLD } from './config.js';
 
 export function isSettleDue(settleMs, now, launchAt, settle = SETTLE) {
   if (settleMs >= settle.durationMs) return true;
@@ -170,7 +176,11 @@ export class Game {
 
   onDown(pt) {
     if (this.state.phase !== 'aiming' || !this.bird) return;
-    if (!isWithinGrabRadius(pt, this.bird.position, SLING.grabRadius)) return;
+    const cssW = this.canvas.clientWidth || this.canvas.width;
+    const cssH = this.canvas.clientHeight || this.canvas.height;
+    const scale = Math.min(cssW / WORLD.width, cssH / WORLD.height) || 1;
+    const grab = adaptiveGrabRadius(SLING.grabRadius, scale);
+    if (!isWithinGrabRadius(pt, this.bird.position, grab)) return;
     this.dispatch({ type: 'DRAG_START' });
     this.pull = computePull(SLING.anchor, pt, SLING.maxPull);
     // move the bird immediately so band/aim ray and body agree on grab

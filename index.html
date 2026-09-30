@@ -2,7 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>愤怒的小鸟风格 · 物理弹弓</title>
     <style>
       * { box-sizing: border-box; }
@@ -17,6 +17,21 @@
         display: block;
         width: 100vw;
         height: 100vh;
+        touch-action: none; /* keep pointer gestures on the canvas: no scroll/zoom stealing drags */
+      }
+      .rotate-hint {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: #263238ee;
+        color: #FFF9C4;
+        font-size: 28px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        z-index: 30;
+        pointer-events: none;
       }
       #hud {
         position: fixed;
@@ -69,13 +84,19 @@
         gap: 12px;
         justify-content: center;
       }
+      .hud-overlay > * {
+        max-height: 92vh;
+        overflow: auto;
+      }
       .hud-levels {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
         min-width: 260px;
+        max-width: 640px;
       }
       .hud-btn {
+        min-height: 44px; /* comfortable touch target */
         font-size: 18px;
         padding: 10px 22px;
         border: 2px #33691E solid;
