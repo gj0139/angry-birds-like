@@ -42,7 +42,7 @@ const pts = await page.evaluate(() => {
   const oy = r.top + (r.height - 900 * s) / 2;
   return {
     bird: { x: ox + 220 * s, y: oy + 620 * s },
-    drag: { x: ox + 160 * s, y: oy + 720 * s }, // strong down-left pull → flat far shot into pond
+    drag: { x: ox + 150 * s, y: oy + 640 * s }, // flat far shot that lands in the pond
   };
 });
 await page.mouse.move(pts.bird.x, pts.bird.y);

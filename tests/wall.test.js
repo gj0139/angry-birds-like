@@ -3,7 +3,7 @@ import Matter from 'matter-js';
 import { createWorld, step } from '../src/physics.js';
 import { loadLevel } from '../src/levelLoader.js';
 import { createBird, launchBird } from '../src/bird.js';
-import { WALL } from '../src/config.js';
+import { WALL, SLING } from '../src/config.js';
 const cfg = { birds: 1, blocks: [], pigs: [] };
 
 describe('back wall (bounce, physical)', () => {
@@ -54,5 +54,33 @@ describe('back wall (bounce, physical)', () => {
       if (bird.velocity.x < 0) break; // bounced off something
     }
     expect(maxX).toBeGreaterThanOrEqual(1250); // reaches the wall plane (edge 1280)
+  });
+
+  it('initial speed is raised — a full pull hits the wall at half height', () => {
+    expect(SLING.power).toBeGreaterThanOrEqual(0.26); // was 0.20, user asked faster
+    const { engine } = createWorld();
+    loadLevel(engine, cfg);
+    const bird = createBird(engine, { x: 220, y: 620 }, () => 0.1);
+    // max pull slightly downward → vx max, mild up arc (natural strong shot)
+    launchBird(engine, bird, {
+      x: 120 * SLING.power,
+      y: -40 * SLING.power,
+    });
+    let impactY = null;
+    for (let i = 0; i < 400; i++) {
+      step(engine);
+      if (bird.position.x >= 1270) {
+        impactY = bird.position.y;
+        break;
+      }
+      if (bird.velocity.x < 0 && bird.position.x > 1000) {
+        impactY = bird.position.y;
+        break;
+      }
+    }
+    expect(impactY).not.toBeNull(); // it reached the wall
+    // wall spans 0..800, half height is y=400 — hit in the upper half band
+    expect(impactY).toBeLessThanOrEqual(460);
+    expect(impactY).toBeGreaterThanOrEqual(80);
   });
 });

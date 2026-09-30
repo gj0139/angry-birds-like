@@ -5,7 +5,7 @@ export const SLING = {
   anchor: { x: 220, y: 620 },
   maxPull: 120,
   minPull: 10,
-  power: 0.2,
+  power: 0.28, // raised from 0.20 — full pull now hits the wall mid-height
   grabRadius: 60,
 };
 

@@ -157,6 +157,26 @@ describe('renderer', () => {
     expect(aimCalls).toHaveLength(0);
   });
 
+  it('sling post stands on the ground plane (bottom flush with groundY)', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    // trunk must run all the way down to the horizontal plane
+    const standsOnGround = calls.some(
+      ([m, x, y]) => m === 'lineTo' && x === 220 && y === 800,
+    );
+    expect(standsOnGround).toBe(true);
+  });
+
   // themed background: sky + ground colors come from the level theme
   it('draws themed sky and ground for night', () => {
     const { ctx, calls } = makeMockCtx();

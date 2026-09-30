@@ -245,13 +245,14 @@ export function createRenderer(canvas) {
     return toScreen(p, vp);
   }
 
-  function drawSlingFork(ctx, anchor) {
+  function drawSlingFork(ctx, anchor, groundY) {
     ctx.strokeStyle = SLING_FILL;
     ctx.lineWidth = 10;
     ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(anchor.x, anchor.y + 70);
-    ctx.lineTo(anchor.x, anchor.y);
+    // trunk stands ON the horizontal plane: anchor down to the ground line
+    ctx.moveTo(anchor.x, anchor.y);
+    ctx.lineTo(anchor.x, groundY);
     ctx.moveTo(anchor.x, anchor.y);
     ctx.lineTo(anchor.x - 16, anchor.y - 36);
     ctx.moveTo(anchor.x, anchor.y);
@@ -420,7 +421,7 @@ function drawAimRay(ctx, birdPos, stretch) {
       ? { x: anchor.x + scene.stretch.x, y: anchor.y + scene.stretch.y }
       : anchor;
 
-    drawSlingFork(ctx, anchor);
+    drawSlingFork(ctx, anchor, scene.groundY);
     if (scene.bird) drawBands(ctx, anchor, birdPos);
     if (scene.stretch) drawAimRay(ctx, birdPos, scene.stretch);
 
