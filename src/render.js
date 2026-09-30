@@ -318,15 +318,15 @@ export function createRenderer(canvas) {
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // flapping wing
+    // flapping wing (oversized so it reads clearly at bird scale)
     ctx.save();
     ctx.translate(0, 0);
-    ctx.rotate(Math.sin(t / 90) * 0.45);
+    ctx.rotate(Math.sin(t / 90) * 0.55);
     ctx.fillStyle = FLAME_MID;
     ctx.beginPath();
-    ctx.moveTo(-6, 2);
-    ctx.quadraticCurveTo(-2, 14, 10, 10);
-    ctx.quadraticCurveTo(2, 6, -6, 2);
+    ctx.moveTo(-10, 0);
+    ctx.quadraticCurveTo(-4, 26, 18, 16);
+    ctx.quadraticCurveTo(4, 8, -10, 0);
     ctx.closePath();
     ctx.fill();
     ctx.restore();

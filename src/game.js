@@ -1,5 +1,5 @@
 import Matter from 'matter-js';
-import { createWorld, step } from './physics.js';
+import { createWorld, step, frictionAirAt } from './physics.js';
 import { loadLevel } from './levelLoader.js';
 import { createBird, launchBird } from './bird.js';
 import { applyImpact, isDestroyed } from './blocks.js';
@@ -249,6 +249,15 @@ export class Game {
       const tr = this.bird.plugin.trail;
       tr.push({ x: this.bird.position.x, y: this.bird.position.y });
       if (tr.length > 16) tr.shift();
+    }
+
+    // water drag: the bird slows down while submerged in the pond
+    if (this.bird) {
+      this.bird.frictionAir = frictionAirAt(
+        this.bird.position.x,
+        this.bird.position.y,
+        this.levelCfg.water || null,
+      );
     }
 
     if (this.state.phase === 'flying') {

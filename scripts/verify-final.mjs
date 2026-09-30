@@ -104,7 +104,7 @@ const poolPx = await page.evaluate(() => {
     const d = ctx.getImageData(Math.round(wx * scale * r + ox), Math.round(wy * scale * r + oy), 1, 1).data;
     return [d[0], d[1], d[2]];
   };
-  return { inPool: at(1300, 650), dry: at(500, 650) };
+  return { inPool: at(700, 650), dry: at(350, 650) }; // pond now starts at x=460
 });
 log('pool pixel:', JSON.stringify(poolPx.inPool), 'dry pixel:', JSON.stringify(poolPx.dry));
 const dryDiff =

@@ -277,6 +277,26 @@ describe('renderer', () => {
     expect(drawAt(0)).not.toBe(drawAt(50));
   });
 
+  it('phoenix wing is big — extends well beyond the body radius', () => {
+    const { ctx, calls } = makeMockCtx();
+    const r = createRenderer({ width: 1200, height: 700, getContext: () => ctx, style: {} });
+    r.resize();
+    r.draw({
+      t: 0,
+      slingAnchor: { x: 220, y: 620 },
+      stretch: null,
+      bird: null,
+      birds: [birdAt('phoenix')],
+      blocks: [],
+      pigs: [],
+      groundY: 800,
+    });
+    const bigWing = calls.some(
+      ([m, ...a]) => m === 'quadraticCurveTo' && Math.max(...a.map((v) => Math.abs(v))) >= 20,
+    );
+    expect(bigWing).toBe(true);
+  });
+
   it('phoenix trail draws extra flame dots', () => {
     const countArcs = (trail) => {
       const { ctx, calls } = makeMockCtx();

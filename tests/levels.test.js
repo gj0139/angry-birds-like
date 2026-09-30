@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { LEVELS } from '../src/levels/index.js';
 import { MATERIALS } from '../src/materials.js';
-import { WORLD } from '../src/config.js';
+import { WORLD, WALL } from '../src/config.js';
 
 describe('levels', () => {
   const THEMES = ['day', 'forest', 'dusk', 'desert', 'night', 'snow', 'sea', 'dawn', 'water'];
@@ -74,6 +74,25 @@ describe('levels', () => {
         expect(p.y).toBeGreaterThan(lv.water.y);
         expect(p.x).toBeGreaterThan(lv.water.x);
         expect(p.x).toBeLessThan(lv.water.x + lv.water.w);
+      }
+    }
+  });
+
+  // pond sits right next to the slingshot, and nothing lives behind the wall
+  it('pond reaches the slingshot edge', () => {
+    for (const lv of LEVELS.slice(8)) {
+      expect(lv.water.x).toBeLessThanOrEqual(500); // sling at x=220, edge nearby
+    }
+  });
+
+  it('all level content stays in front of the back wall', () => {
+    const wallFace = WALL.x - WALL.width / 2;
+    for (const lv of LEVELS) {
+      for (const b of lv.blocks) {
+        expect(b.x + b.w / 2).toBeLessThan(wallFace);
+      }
+      for (const p of lv.pigs) {
+        expect(p.x + 22).toBeLessThan(wallFace); // pig radius 22
       }
     }
   });

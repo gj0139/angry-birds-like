@@ -4,7 +4,6 @@ import { createWorld, step } from '../src/physics.js';
 import { loadLevel } from '../src/levelLoader.js';
 import { createBird, launchBird } from '../src/bird.js';
 import { WALL } from '../src/config.js';
-
 const cfg = { birds: 1, blocks: [], pigs: [] };
 
 describe('back wall (bounce, physical)', () => {
@@ -21,7 +20,7 @@ describe('back wall (bounce, physical)', () => {
   it('bird bouncing off the wall reverses direction keeping most speed', () => {
     const { engine } = createWorld();
     loadLevel(engine, cfg);
-    const bird = createBird(engine, { x: 1400, y: 400 }, () => 0.1); // phoenix, fixed skin irrelevant
+    const bird = createBird(engine, { x: 1100, y: 400 }, () => 0.1); // phoenix, fixed skin irrelevant
     launchBird(engine, bird, { x: 15, y: 0 });
 
     let pre = null;
@@ -40,5 +39,20 @@ describe('back wall (bounce, physical)', () => {
     expect(pre).not.toBeNull(); // it did hit the wall
     expect(post).toBeLessThan(0); // reflected
     expect(Math.abs(post)).toBeGreaterThanOrEqual(0.5 * Math.abs(pre)); // keeps >=50% speed
+  });
+
+  it('wall is close enough for a normal arc to reach', () => {
+    expect(WALL.x).toBeLessThanOrEqual(1300); // user feedback: 1460 was too far
+    const { engine } = createWorld();
+    loadLevel(engine, cfg);
+    const bird = createBird(engine, { x: 220, y: 620 }, () => 0.1);
+    launchBird(engine, bird, { x: 18, y: -18 }); // moderate-high arc
+    let maxX = 0;
+    for (let i = 0; i < 400; i++) {
+      step(engine);
+      maxX = Math.max(maxX, bird.position.x);
+      if (bird.velocity.x < 0) break; // bounced off something
+    }
+    expect(maxX).toBeGreaterThanOrEqual(1250); // reaches the wall plane (edge 1280)
   });
 });
